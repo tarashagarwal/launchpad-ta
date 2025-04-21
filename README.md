@@ -20,6 +20,19 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment Setup
+
+Before starting the application, you need to set up the required environment variables:
+
+1. Create a `.env.local` file in the root directory
+2. Add the following variables:
+
+```
+NEXT_PUBLIC_BASE_URL=your_api_base_url (https://68066228e81df7060eb6f6d2.mockapi.io) I used this
+```
+
+This variable is required for the API service to function correctly. Without it, the application will show errors when trying to fetch data.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
