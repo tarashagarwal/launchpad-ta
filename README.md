@@ -1,5 +1,12 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## System Requirements
+
+To run this application without any issues, please ensure you have the following:
+
+- Node.js v20.19.1 LTS
+- npm (comes with Node.js)
+
 ## Getting Started
 
 First, run the development server:
