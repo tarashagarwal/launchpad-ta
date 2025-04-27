@@ -40,7 +40,7 @@ export default function NoticeListScreen() {
   async function fetchNotices() {
     setLoading(true);
     try {
-      const response = await fetch(`https://w23kupdwwrkbg34ehsux7bw3qq0fewoy.lambda-url.us-east-1.on.aws?page=${page}`);
+      const response = await fetch(`https://wp9s6wxn0h.execute-api.us-east-1.amazonaws.com/notices?page=${page}`);
       if (!response.ok) {
         throw new Error('Failed to fetch notices');
       }
