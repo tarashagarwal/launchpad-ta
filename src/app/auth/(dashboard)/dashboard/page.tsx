@@ -1,3 +1,5 @@
+import NoticeDetailScreen from '@/components/ui/notice';
+
 export default function Page() {
-  return <div>Dashboard</div>;
+  return <div><NoticeDetailScreen/></div>;
 }
