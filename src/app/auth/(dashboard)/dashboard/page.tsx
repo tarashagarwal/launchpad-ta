@@ -9,16 +9,18 @@ export default function NoticeListScreen() {
   const [notices, setNotices] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const loader = useRef<HTMLDivElement | null>(null);
+  const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
-    loadMoreNotices();
+    fetchNotices();
   }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          loadMoreNotices();
+          fetchNotices();
         }
       },
       { threshold: 1 }
@@ -35,16 +37,23 @@ export default function NoticeListScreen() {
     };
   }, []);
 
-  function loadMoreNotices() {
-    // Simulate API call
-    const newNotices = Array.from({ length: 9 }).map((_, idx) => ({
-      ...mockNotice,
-      id: `notice-${page}-${idx}`,
-      title: `Notice ${page}-${idx}`,
-    }));
+  async function fetchNotices() {
+    setLoading(true);
+    try {
+      const response = await fetch(`https://w23kupdwwrkbg34ehsux7bw3qq0fewoy.lambda-url.us-east-1.on.aws?page=${page}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch notices');
+      }
+      const data = await response.json();
 
-    setNotices((prev) => [...prev, ...newNotices]);
-    setPage((prev) => prev + 1);
+      setNotices((prev) => [...prev, ...data]);
+      setPage((prev) => prev + 1);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load more notices!");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function showToast(title: string, message: string) {

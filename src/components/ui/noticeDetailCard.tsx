@@ -8,7 +8,7 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
 import { title } from "process";
 
-export default function NoticeDetailCard({ initialNotice, onToast }: { initialNotice: any, onToast: (message: string) => void }) {
+export default function NoticeDetailCard({ initialNotice, onToast }: { initialNotice: any, onToast: (title: string, message: string) => void }) {
 
   const [notice, setNotice] = useState(initialNotice);
   const [editMode, setEditMode] = useState(false);
