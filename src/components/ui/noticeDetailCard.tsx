@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Save, Edit } from "lucide-react";
+import { Save, Edit, Trash } from "lucide-react";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
@@ -190,19 +190,24 @@ export default function NoticeDetailCard({
           </button>
           <button
             onClick={handleSave}
-            disabled={!isChanged}
-            className={`flex items-center gap-2 px-4 py-2 rounded ${isChanged ? "bg-indigo-500 hover:bg-indigo-600 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+            disabled={!editMode || !isChanged}
+            className={`flex items-center gap-2 px-4 py-2 rounded ${
+              editMode && isChanged
+                ? "bg-indigo-500 hover:bg-indigo-600 text-white"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
           >
             <Save className="h-5 w-5" />
           </button>
+
         </div>
 
         {/* Delete Button */}
         <button
           onClick={handleDelete}
-          className="mt-4 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded"
+           className="mt-4 flex justify-center items-center bg-red-400 hover:bg-red-600 text-white px-6 py-2 rounded"
         >
-          Delete Notice
+           <Trash className="h-5 w-5" />
         </button>
       </div>
     </div>
