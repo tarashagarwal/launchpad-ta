@@ -1,19 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { mockNotice } from "../data//MockNoticeData";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import dynamic from "next/dynamic";
 import { Save, Edit } from "lucide-react";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
 
-export default function NoticeDetailScreen() {
-  const [notice, setNotice] = useState(mockNotice);
+export default function NoticeDetailCard({ initialNotice }: { initialNotice: any }) {
+  const [notice, setNotice] = useState(initialNotice);
   const [editMode, setEditMode] = useState(false);
-  const [originalNotice, setOriginalNotice] = useState(mockNotice);
+  const [originalNotice, setOriginalNotice] = useState(initialNotice);
   const [isChanged, setIsChanged] = useState(false);
 
   useEffect(() => {
@@ -28,7 +26,6 @@ export default function NoticeDetailScreen() {
     setNotice({ ...notice, isRead: updatedIsRead });
     toast.success(updatedIsRead ? "Marked as Read" : "Marked as Unread");
   }
-  
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setNotice({ ...notice, title: e.target.value });
@@ -41,7 +38,7 @@ export default function NoticeDetailScreen() {
   function handleDelete() {
     if (window.confirm("Are you sure you want to delete this notice?")) {
       toast.success("Notice deleted successfully");
-      // Redirect logic here (e.g., using react-router)
+      // Redirect logic here
     }
   }
 
@@ -70,8 +67,8 @@ export default function NoticeDetailScreen() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="border rounded-2xl shadow-md p-6 bg-white">
+    <div className="p-4 w-full min-w-[600px]">
+      <div className="border rounded-2xl shadow-md p-6 bg-white flex flex-col h-full">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">{notice.title}</h1>
@@ -82,7 +79,7 @@ export default function NoticeDetailScreen() {
               onChange={handleToggleRead}
               className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
             />
-            {/* <label className="text-sm text-gray-700">Mark as Read</label> */}
+            {/* <label className="text-sm text-gray-700 ml-2">Mark as Read</label> */}
           </div>
         </div>
 
@@ -98,7 +95,7 @@ export default function NoticeDetailScreen() {
           />
         </div>
 
-        <div className="mb-4">
+        <div className="mb-4 flex-1">
           <label className="block mb-2 font-semibold">Description</label>
           <ReactQuill
             key={editMode ? "edit" : "read"}
@@ -106,6 +103,7 @@ export default function NoticeDetailScreen() {
             onChange={handleDescriptionChange}
             readOnly={!editMode}
             theme={editMode ? "snow" : "bubble"}
+            className="h-full"
           />
         </div>
 
@@ -132,7 +130,7 @@ export default function NoticeDetailScreen() {
           <input type="file" onChange={handleAttachmentUpload} />
         </div>
 
-        {/* Action Buttons at Bottom */}
+        {/* Action Buttons */}
         <div className="flex justify-end gap-4 mt-6">
           <button
             onClick={() => setEditMode(!editMode)}
@@ -159,9 +157,6 @@ export default function NoticeDetailScreen() {
           Delete Notice
         </button>
       </div>
-
-      {/* Toast container */}
-      <ToastContainer />
     </div>
   );
 }
