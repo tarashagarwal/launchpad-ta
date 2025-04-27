@@ -7,6 +7,8 @@ import { Save, Edit } from "lucide-react";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
 
+const API_DOMAIN= "https://wp9s6wxn0h.execute-api.us-east-1.amazonaws.com";
+
 export default function NoticeDetailCard({
   initialNotice,
   onToast,
@@ -29,11 +31,28 @@ export default function NoticeDetailCard({
     );
   }, [notice, originalNotice]);
 
-  function handleToggleRead() {
+  async function handleToggleRead() {
     const updatedIsRead = !notice.isRead;
-    setNotice({ ...notice, isRead: updatedIsRead });
-    handleNotification(updatedIsRead ? "Marked as Read" : "Marked as Unread");
+  
+    try {
+      const response = await fetch(`${API_DOMAIN}/trigger-read/${notice.id}`, {
+        method: "GET",
+      });
+
+      console.log("Response from read status update:", response);
+  
+      if (!response.ok) {
+        throw new Error('Failed to update read status');
+      }
+  
+      setNotice({ ...notice, isRead: updatedIsRead });
+      handleNotification(updatedIsRead ? "Marked as Read" : "Marked as Unread");
+    } catch (error) {
+      console.error(error);
+      handleNotification("Failed to update read status");
+    }
   }
+  
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setNotice({ ...notice, title: e.target.value });
@@ -47,14 +66,14 @@ export default function NoticeDetailCard({
     if (!window.confirm("Are you sure you want to delete this notice?")) return;
   
     try {
-      const response = await fetch(`https://wp9s6wxn0h.execute-api.us-east-1.amazonaws.com/delete-notice/${notice.id}`, {
+      const response = await fetch(`${API_DOMAIN}delete-notice/${notice.id}`, {
         method: "GET",
       });
   
       if (!response.ok) {
         throw new Error("Failed to delete notice");
       }
-      
+
       onDelete(notice.id)
       handleNotification("Notice deleted successfully");
     } catch (error) {
