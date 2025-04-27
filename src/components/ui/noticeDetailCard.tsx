@@ -162,7 +162,7 @@ export default function NoticeDetailCard({
 
         {/* Description */}
         <div className="mb-4 flex-1">
-          <label className="block mb-2 font-semibold">Description</label>
+        <label className="block mb-2 font-bold text-xl">Description</label>
           {editMode ? (
             <ReactQuill
               key="edit"
@@ -194,7 +194,6 @@ export default function NoticeDetailCard({
 
         {/* Attachments */}
         <div className="mb-4">
-          <label className="block mb-2 font-semibold">Attachments</label>
           <div className="flex flex-wrap gap-4 mb-2">
             {notice.attachments.map(att => (
               <div key={att.id} className="relative">
@@ -222,10 +221,9 @@ export default function NoticeDetailCard({
           <div className="flex items-center gap-2 mt-4">
             <button
               onClick={() => document.getElementById(`fileInput-${notice.id}`)?.click()}
-              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded m-2"
             >
               <Paperclip className="h-5 w-5" />
-              Upload Attachment
             </button>
             <input
               id={`fileInput-${notice.id}`}
