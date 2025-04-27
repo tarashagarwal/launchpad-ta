@@ -47,8 +47,15 @@ export default function NoticeListScreen() {
     setPage((prev) => prev + 1);
   }
 
-  function showToast(message: string) {
-    toast.success(message);
+  function showToast(title: string, message: string) {
+    const truncatedTitle = title.length > 10 ? `${title.slice(0, 10)}...` : title;
+    toast.success(
+      <div>
+        <strong>{truncatedTitle}</strong>
+        <br />
+        {message}
+      </div>
+    );
   }
   
 
@@ -64,8 +71,9 @@ export default function NoticeListScreen() {
       <div ref={loader} className="h-10"></div>
       <ToastContainer
       newestOnTop={true} 
-      closeOnClick={true}
-      autoClose={2000}
+      closeOnClick
+      draggable
+      autoClose={3000}
       transition={Slide}/>
     </div>
   );

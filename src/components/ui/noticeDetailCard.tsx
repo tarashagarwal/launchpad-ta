@@ -6,6 +6,7 @@ import { Save, Edit } from "lucide-react";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
+import { title } from "process";
 
 export default function NoticeDetailCard({ initialNotice, onToast }: { initialNotice: any, onToast: (message: string) => void }) {
 
@@ -24,7 +25,7 @@ export default function NoticeDetailCard({ initialNotice, onToast }: { initialNo
   function handleToggleRead() {
     const updatedIsRead = !notice.isRead;
     setNotice({ ...notice, isRead: updatedIsRead });
-    onToast(updatedIsRead ? "Marked as Read" : "Marked as Unread");
+    handleNotification(updatedIsRead ? "Marked as Read" : "Marked as Unread");
   }
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -37,7 +38,7 @@ export default function NoticeDetailCard({ initialNotice, onToast }: { initialNo
 
   function handleDelete() {
     if (window.confirm("Are you sure you want to delete this notice?")) {
-      onToast("Notice deleted successfully");
+      handleNotification("Notice deleted successfully");
       // Redirect logic here
     }
   }
@@ -50,20 +51,24 @@ export default function NoticeDetailCard({ initialNotice, onToast }: { initialNo
         type: e.target.files[0].type.startsWith("image") ? "image" : "video",
       };
       setNotice({ ...notice, attachments: [...notice.attachments, newAttachment] });
-      onToast("Attachment uploaded");
+      handleNotification("Attachment uploaded");
     }
   }
 
   function handleAttachmentRemove(id: string) {
     setNotice({ ...notice, attachments: notice.attachments.filter(a => a.id !== id) });
-    onToast("Attachment removed");
+    handleNotification("Attachment removed");
   }
 
   function handleSave() {
     setOriginalNotice(notice);
     setEditMode(false);
     setIsChanged(false);
-    onToast("Notice updated successfully");
+    handleNotification("Notice updated successfully");
+  }
+
+  function handleNotification(message: string) {
+    onToast(notice.title, message);
   }
 
   return (
