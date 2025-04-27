@@ -7,7 +7,7 @@ import { Save, Edit } from "lucide-react";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
 
-const API_DOMAIN= "https://wp9s6wxn0h.execute-api.us-east-1.amazonaws.com";
+const API_DOMAIN = "https://wp9s6wxn0h.execute-api.us-east-1.amazonaws.com";
 
 export default function NoticeDetailCard({
   initialNotice,
@@ -17,8 +17,7 @@ export default function NoticeDetailCard({
   initialNotice: any;
   onToast: (title: string, message: string) => void;
   onDelete: (id: string) => void;
-}) { 
-
+}) {
   const [notice, setNotice] = useState(initialNotice);
   const [editMode, setEditMode] = useState(false);
   const [originalNotice, setOriginalNotice] = useState(initialNotice);
@@ -33,18 +32,16 @@ export default function NoticeDetailCard({
 
   async function handleToggleRead() {
     const updatedIsRead = !notice.isRead;
-  
+
     try {
       const response = await fetch(`${API_DOMAIN}/trigger-read/${notice.id}`, {
         method: "GET",
       });
 
-      console.log("Response from read status update:", response);
-  
       if (!response.ok) {
         throw new Error('Failed to update read status');
       }
-  
+
       setNotice({ ...notice, isRead: updatedIsRead });
       handleNotification(updatedIsRead ? "Marked as Read" : "Marked as Unread");
     } catch (error) {
@@ -52,7 +49,6 @@ export default function NoticeDetailCard({
       handleNotification("Failed to update read status");
     }
   }
-  
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setNotice({ ...notice, title: e.target.value });
@@ -64,17 +60,17 @@ export default function NoticeDetailCard({
 
   async function handleDelete() {
     if (!window.confirm("Are you sure you want to delete this notice?")) return;
-  
+
     try {
-      const response = await fetch(`${API_DOMAIN}delete-notice/${notice.id}`, {
+      const response = await fetch(`${API_DOMAIN}/delete-notice/${notice.id}`, {
         method: "GET",
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to delete notice");
       }
 
-      onDelete(notice.id)
+      onDelete(notice.id);
       handleNotification("Notice deleted successfully");
     } catch (error) {
       console.error(error);
@@ -111,12 +107,28 @@ export default function NoticeDetailCard({
   }
 
   return (
-    <div className="p-4 w-full min-w-[600px]">
-      <div className="border rounded-2xl shadow-md p-6 bg-white flex flex-col h-full">
-        {/* Header */}
+    <div className="relative p-4 w-full min-w-[600px]">
+      {/* Outer Card */}
+      <div className="relative border rounded-2xl shadow-md p-6 pt-10 bg-white flex flex-col h-full overflow-hidden">
+        {/* 🔵 Solid Dark Blue Filler at Top */}
+        <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-orange-700 to-red-200 rounded-t-2xl"></div>
+
+        {/* Header - Title and Read/Unread Toggle */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">{notice.title}</h1>
-          <div className="flex items-center">
+          <div className="flex-1">
+            {editMode ? (
+              <input
+                type="text"
+                value={notice.title}
+                onChange={handleTitleChange}
+                placeholder="Enter Notice Title..."
+                className="border p-2 w-full rounded text-xl font-bold"
+              />
+            ) : (
+              <div className="text-2xl font-bold truncate">{notice.title}</div>
+            )}
+          </div>
+          <div className="flex items-center ml-4">
             <input
               type="checkbox"
               checked={notice.isRead}
@@ -126,18 +138,7 @@ export default function NoticeDetailCard({
           </div>
         </div>
 
-        {/* Editable Fields */}
-        <div className="mb-4">
-          <label className="block mb-2 font-semibold">Title</label>
-          <input
-            type="text"
-            value={notice.title}
-            onChange={handleTitleChange}
-            className="border p-2 w-full rounded"
-            disabled={!editMode}
-          />
-        </div>
-
+        {/* Description */}
         <div className="mb-4 flex-1">
           <label className="block mb-2 font-semibold">Description</label>
           <ReactQuill
@@ -185,7 +186,7 @@ export default function NoticeDetailCard({
             className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
           >
             <Edit className="h-5 w-5" />
-            {editMode ? "Cancel Edit" : "Edit"}
+            {editMode ? "Cancel" : ""}
           </button>
           <button
             onClick={handleSave}
@@ -193,7 +194,6 @@ export default function NoticeDetailCard({
             className={`flex items-center gap-2 px-4 py-2 rounded ${isChanged ? "bg-indigo-500 hover:bg-indigo-600 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
           >
             <Save className="h-5 w-5" />
-            Save
           </button>
         </div>
 
