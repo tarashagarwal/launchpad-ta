@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Save, Edit, Trash } from "lucide-react";
+import { Save, Edit, Trash, Paperclip } from "lucide-react";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
@@ -32,16 +32,13 @@ export default function NoticeDetailCard({
 
   async function handleToggleRead() {
     const updatedIsRead = !notice.isRead;
-
     try {
       const response = await fetch(`${API_DOMAIN}/trigger-read/${notice.id}`, {
         method: "GET",
       });
-
       if (!response.ok) {
         throw new Error('Failed to update read status');
       }
-
       setNotice({ ...notice, isRead: updatedIsRead });
       handleNotification(updatedIsRead ? "Marked as Read" : "Marked as Unread");
     } catch (error) {
@@ -65,11 +62,9 @@ export default function NoticeDetailCard({
       const response = await fetch(`${API_DOMAIN}/delete-notice/${notice.id}`, {
         method: "GET",
       });
-
       if (!response.ok) {
         throw new Error("Failed to delete notice");
       }
-
       onDelete(notice.id);
       handleNotification("Notice deleted successfully");
     } catch (error) {
@@ -107,20 +102,18 @@ export default function NoticeDetailCard({
           description: notice.description,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to update notice");
       }
-  
-      // Instead of using backend returned notice, update manually
+
       const updatedFields = await response.json();
-  
       const updatedNotice = {
-        ...notice, // Keep existing fields like attachments, isRead
+        ...notice,
         title: updatedFields.title ?? notice.title,
         description: updatedFields.description ?? notice.description,
       };
-  
+
       setOriginalNotice(updatedNotice);
       setNotice(updatedNotice);
       setEditMode(false);
@@ -131,8 +124,6 @@ export default function NoticeDetailCard({
       handleNotification("Failed to update notice");
     }
   }
-  
-  
 
   function handleNotification(message: string) {
     onToast(notice.title, message);
@@ -140,12 +131,11 @@ export default function NoticeDetailCard({
 
   return (
     <div className="relative p-4 w-full min-w-[600px]">
-      {/* Outer Card */}
       <div className="relative border rounded-2xl shadow-md p-6 pt-10 bg-white flex flex-col h-full overflow-hidden">
-        {/* 🔵 Solid Dark Blue Filler at Top */}
+        {/* Top Color */}
         <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-orange-700 to-red-200 rounded-t-2xl"></div>
 
-        {/* Header - Title and Read/Unread Toggle */}
+        {/* Title and Read Toggle */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
             {editMode ? (
@@ -173,14 +163,33 @@ export default function NoticeDetailCard({
         {/* Description */}
         <div className="mb-4 flex-1">
           <label className="block mb-2 font-semibold">Description</label>
-          <ReactQuill
-            key={editMode ? "edit" : "read"}
-            value={notice.description}
-            onChange={handleDescriptionChange}
-            readOnly={!editMode}
-            theme={editMode ? "snow" : "bubble"}
-            className="h-full"
-          />
+          {editMode ? (
+            <ReactQuill
+              key="edit"
+              value={notice.description}
+              onChange={handleDescriptionChange}
+              theme="snow"
+              modules={{
+                toolbar: [
+                  [{ size: ['small', false, 'large', 'huge'] }],
+                  ['bold', 'italic', 'underline', 'strike'],
+                  [{ list: 'ordered' }, { list: 'bullet' }],
+                  ['clean'],
+                ],
+              }}
+              formats={[
+                'size',
+                'bold', 'italic', 'underline', 'strike',
+                'list', 'bullet',
+              ]}
+              className="h-full"
+            />
+          ) : (
+            <div
+              className="ql-editor"
+              dangerouslySetInnerHTML={{ __html: notice.description }}
+            />
+          )}
         </div>
 
         {/* Attachments */}
@@ -208,7 +217,23 @@ export default function NoticeDetailCard({
               </div>
             ))}
           </div>
-          <input type="file" onChange={handleAttachmentUpload} />
+
+          {/* Upload Button */}
+          <div className="flex items-center gap-2 mt-4">
+            <button
+              onClick={() => document.getElementById(`fileInput-${notice.id}`)?.click()}
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+            >
+              <Paperclip className="h-5 w-5" />
+              Upload Attachment
+            </button>
+            <input
+              id={`fileInput-${notice.id}`}
+              type="file"
+              onChange={handleAttachmentUpload}
+              className="hidden"
+            />
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -231,15 +256,14 @@ export default function NoticeDetailCard({
           >
             <Save className="h-5 w-5" />
           </button>
-
         </div>
 
-        {/* Delete Button */}
+        {/* Delete */}
         <button
           onClick={handleDelete}
-           className="mt-4 flex justify-center items-center bg-red-400 hover:bg-red-600 text-white px-6 py-2 rounded"
+          className="mt-4 flex justify-center items-center bg-red-400 hover:bg-red-600 text-white px-6 py-2 rounded"
         >
-           <Trash className="h-5 w-5" />
+          <Trash className="h-5 w-5" />
         </button>
       </div>
     </div>
