@@ -95,12 +95,44 @@ export default function NoticeDetailCard({
     handleNotification("Attachment removed");
   }
 
-  function handleSave() {
-    setOriginalNotice(notice);
-    setEditMode(false);
-    setIsChanged(false);
-    handleNotification("Notice updated successfully");
+  async function handleSave() {
+    try {
+      const response = await fetch(`${API_DOMAIN}/update-notice/${notice.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: notice.title,
+          description: notice.description,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to update notice");
+      }
+  
+      // Instead of using backend returned notice, update manually
+      const updatedFields = await response.json();
+  
+      const updatedNotice = {
+        ...notice, // Keep existing fields like attachments, isRead
+        title: updatedFields.title ?? notice.title,
+        description: updatedFields.description ?? notice.description,
+      };
+  
+      setOriginalNotice(updatedNotice);
+      setNotice(updatedNotice);
+      setEditMode(false);
+      setIsChanged(false);
+      handleNotification("Notice updated successfully");
+    } catch (error) {
+      console.error(error);
+      handleNotification("Failed to update notice");
+    }
   }
+  
+  
 
   function handleNotification(message: string) {
     onToast(notice.title, message);
