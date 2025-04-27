@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import NoticeDetailCard from '@/components/ui/noticeDetailCard';
 import { mockNotice } from "@/components/data/MockNoticeData";
+import { toast, ToastContainer, Slide } from "react-toastify";
 
 
 export default function NoticeListScreen() {
@@ -46,16 +47,26 @@ export default function NoticeListScreen() {
     setPage((prev) => prev + 1);
   }
 
+  function showToast(message: string) {
+    toast.success(message);
+  }
+  
+
   return (
     <div className="p-6 max-w-7xl mx-auto min-h-screen">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
         {notices.map((notice) => (
-          <NoticeDetailCard key={notice.id} initialNotice={notice} />
+          <NoticeDetailCard key={notice.id} initialNotice={notice} onToast={showToast} />
         ))}
       </div>
 
       {/* Invisible loader trigger */}
       <div ref={loader} className="h-10"></div>
+      <ToastContainer
+      newestOnTop={true} 
+      closeOnClick={true}
+      autoClose={2000}
+      transition={Slide}/>
     </div>
   );
 }

@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { toast } from "react-toastify";
 import dynamic from "next/dynamic";
 import { Save, Edit } from "lucide-react";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
 
-export default function NoticeDetailCard({ initialNotice }: { initialNotice: any }) {
+export default function NoticeDetailCard({ initialNotice, onToast }: { initialNotice: any, onToast: (message: string) => void }) {
+
   const [notice, setNotice] = useState(initialNotice);
   const [editMode, setEditMode] = useState(false);
   const [originalNotice, setOriginalNotice] = useState(initialNotice);
@@ -24,7 +24,7 @@ export default function NoticeDetailCard({ initialNotice }: { initialNotice: any
   function handleToggleRead() {
     const updatedIsRead = !notice.isRead;
     setNotice({ ...notice, isRead: updatedIsRead });
-    toast.success(updatedIsRead ? "Marked as Read" : "Marked as Unread");
+    onToast(updatedIsRead ? "Marked as Read" : "Marked as Unread");
   }
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -37,7 +37,7 @@ export default function NoticeDetailCard({ initialNotice }: { initialNotice: any
 
   function handleDelete() {
     if (window.confirm("Are you sure you want to delete this notice?")) {
-      toast.success("Notice deleted successfully");
+      onToast("Notice deleted successfully");
       // Redirect logic here
     }
   }
@@ -50,20 +50,20 @@ export default function NoticeDetailCard({ initialNotice }: { initialNotice: any
         type: e.target.files[0].type.startsWith("image") ? "image" : "video",
       };
       setNotice({ ...notice, attachments: [...notice.attachments, newAttachment] });
-      toast.success("Attachment uploaded");
+      onToast("Attachment uploaded");
     }
   }
 
   function handleAttachmentRemove(id: string) {
     setNotice({ ...notice, attachments: notice.attachments.filter(a => a.id !== id) });
-    toast.success("Attachment removed");
+    onToast("Attachment removed");
   }
 
   function handleSave() {
     setOriginalNotice(notice);
     setEditMode(false);
     setIsChanged(false);
-    toast.success("Notice updated successfully");
+    onToast("Notice updated successfully");
   }
 
   return (
