@@ -6,9 +6,16 @@ import { Save, Edit } from "lucide-react";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
-import { title } from "process";
 
-export default function NoticeDetailCard({ initialNotice, onToast }: { initialNotice: any, onToast: (title: string, message: string) => void }) {
+export default function NoticeDetailCard({
+  initialNotice,
+  onToast,
+  onDelete,
+}: {
+  initialNotice: any;
+  onToast: (title: string, message: string) => void;
+  onDelete: (id: string) => void;
+}) { 
 
   const [notice, setNotice] = useState(initialNotice);
   const [editMode, setEditMode] = useState(false);
@@ -36,10 +43,23 @@ export default function NoticeDetailCard({ initialNotice, onToast }: { initialNo
     setNotice({ ...notice, description: value });
   }
 
-  function handleDelete() {
-    if (window.confirm("Are you sure you want to delete this notice?")) {
+  async function handleDelete() {
+    if (!window.confirm("Are you sure you want to delete this notice?")) return;
+  
+    try {
+      const response = await fetch(`https://wp9s6wxn0h.execute-api.us-east-1.amazonaws.com/delete-notice/${notice.id}`, {
+        method: "GET",
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to delete notice");
+      }
+      
+      onDelete(notice.id)
       handleNotification("Notice deleted successfully");
-      // Redirect logic here
+    } catch (error) {
+      console.error(error);
+      handleNotification("Failed to delete notice");
     }
   }
 
@@ -84,7 +104,6 @@ export default function NoticeDetailCard({ initialNotice, onToast }: { initialNo
               onChange={handleToggleRead}
               className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
             />
-            {/* <label className="text-sm text-gray-700 ml-2">Mark as Read</label> */}
           </div>
         </div>
 
@@ -119,9 +138,14 @@ export default function NoticeDetailCard({ initialNotice, onToast }: { initialNo
             {notice.attachments.map(att => (
               <div key={att.id} className="relative">
                 {att.type === "image" ? (
-                  <img src={att.url} alt="Attachment" className="w-32 h-32 object-cover rounded" />
+                  <img src={att.url} alt="Attachment" className="w-64 h-40 object-cover rounded" />
                 ) : (
-                  <video src={att.url} controls className="w-32 h-32 rounded" />
+                  <video
+                    src={att.url}
+                    controls
+                    preload="metadata"
+                    className="w-64 h-40 rounded shadow-md"
+                  />
                 )}
                 <button
                   onClick={() => handleAttachmentRemove(att.id)}
