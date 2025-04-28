@@ -8,6 +8,7 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
 
 const API_DOMAIN = "https://wp9s6wxn0h.execute-api.us-east-1.amazonaws.com";
+const PUBLIC_BUCKET_URL = "https://coltie-uploads.s3.amazonaws.com/uploads/";
 
 export default function NoticeDetailCard({
   initialNotice,
@@ -119,6 +120,7 @@ export default function NoticeDetailCard({
           body: JSON.stringify({
             fileType: att.type,
             fileName: att.name,
+            noticeId: notice.id
           }),
         });
   
@@ -247,9 +249,9 @@ export default function NoticeDetailCard({
         {/* Attachments */}
         <div className="mb-4">
           <div className="flex flex-wrap gap-4 mb-2">
-            {notice.attachments.map(att => (
+            {notice.attachments.filter((att) => att.type).map(att => (
               <div key={att.id} className="relative">
-                consil
+                
                 {att.type.startsWith("image") ? (
                   <img src={att.url} alt="Attachment" className="w-64 h-40 object-cover rounded" />
                 ) : att.type.startsWith("video") ? (
