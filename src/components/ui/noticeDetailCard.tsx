@@ -22,11 +22,13 @@ export default function NoticeDetailCard({
   const [editMode, setEditMode] = useState(false);
   const [originalNotice, setOriginalNotice] = useState(initialNotice);
   const [isChanged, setIsChanged] = useState(false);
+  const [pendingUploads, setPendingUploads] = useState<File[]>([]);
 
   useEffect(() => {
     setIsChanged(
       notice.title !== originalNotice.title ||
-      notice.description !== originalNotice.description
+      notice.description !== originalNotice.description ||
+      notice.attachments.length !== originalNotice.attachments.length
     );
   }, [notice, originalNotice]);
 
@@ -75,15 +77,27 @@ export default function NoticeDetailCard({
   function handleAttachmentUpload(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files) {
       const file = e.target.files[0];
+  
       const newAttachment = {
         id: `attach-${Date.now()}`,
         url: URL.createObjectURL(file),
         type: file.type,
+        file: file,
+        name: file.name,
       };
-      setNotice({ ...notice, attachments: [...notice.attachments, newAttachment] });
-      handleNotification("Attachment uploaded");
+  
+      setNotice((prevNotice) => ({
+        ...prevNotice,
+        attachments: [...prevNotice.attachments, newAttachment],
+      }));
+  
+      //setIsChanged(true); // 🚀 Mark it changed when new attachment added!
+  
+      handleNotification(`File ready to upload: ${file.name}`);
     }
   }
+  
+  
 
   function handleAttachmentRemove(id: string) {
     setNotice({ ...notice, attachments: notice.attachments.filter(a => a.id !== id) });
@@ -92,36 +106,79 @@ export default function NoticeDetailCard({
 
   async function handleSave() {
     try {
+      const uploadedAttachments: { fileName: string; type: string }[] = [];
+  
+      // 1. Upload each new file in attachments
+      for (const att of notice.attachments) {
+        if (!att.file) continue; // Skip already uploaded ones
+  
+        // a) Get presigned URL (without noticeId)
+        const presignedRes = await fetch(`${API_DOMAIN}/get-signed-url`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileType: att.type,
+            fileName: att.name,
+          }),
+        });
+  
+        if (!presignedRes.ok) {
+          throw new Error("Failed to get presigned URL");
+        }
+  
+        const presignedData = await presignedRes.json();
+  
+        // b) Upload the file
+        await fetch(presignedData.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": att.type },
+          body: att.file,
+        });
+        console.log(`File uploaded: ${presignedData}`);
+        // c) Save uploaded filename for notice update
+        const fileName = att.name
+        uploadedAttachments.push({
+          fileName: fileName,
+          type: att.type,
+        });
+      }
+  
+      // 2. Post updated notice
       const response = await fetch(`${API_DOMAIN}/update-notice/${notice.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: notice.title,
           description: notice.description,
+          attachments: uploadedAttachments,
         }),
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to update notice");
       }
-
+  
+      // 3. Update frontend
       const updatedFields = await response.json();
       const updatedNotice = {
         ...notice,
         title: updatedFields.title ?? notice.title,
         description: updatedFields.description ?? notice.description,
+        attachments: updatedFields.attachments ?? notice.attachments,
       };
-
+  
       setOriginalNotice(updatedNotice);
       setNotice(updatedNotice);
       setEditMode(false);
       setIsChanged(false);
+  
       handleNotification("Notice updated successfully");
     } catch (error) {
       console.error(error);
       handleNotification("Failed to update notice");
     }
   }
+  
 
   function handleNotification(message: string) {
     onToast(notice.title, message);
@@ -192,6 +249,7 @@ export default function NoticeDetailCard({
           <div className="flex flex-wrap gap-4 mb-2">
             {notice.attachments.map(att => (
               <div key={att.id} className="relative">
+                consil
                 {att.type.startsWith("image") ? (
                   <img src={att.url} alt="Attachment" className="w-64 h-40 object-cover rounded" />
                 ) : att.type.startsWith("video") ? (
