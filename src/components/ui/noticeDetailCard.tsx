@@ -57,7 +57,6 @@ export default function NoticeDetailCard({
 
   async function handleDelete() {
     if (!window.confirm("Are you sure you want to delete this notice?")) return;
-
     try {
       const response = await fetch(`${API_DOMAIN}/delete-notice/${notice.id}`, {
         method: "GET",
@@ -75,10 +74,11 @@ export default function NoticeDetailCard({
 
   function handleAttachmentUpload(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files) {
+      const file = e.target.files[0];
       const newAttachment = {
         id: `attach-${Date.now()}`,
-        url: URL.createObjectURL(e.target.files[0]),
-        type: e.target.files[0].type.startsWith("image") ? "image" : "video",
+        url: URL.createObjectURL(file),
+        type: file.type,
       };
       setNotice({ ...notice, attachments: [...notice.attachments, newAttachment] });
       handleNotification("Attachment uploaded");
@@ -94,9 +94,7 @@ export default function NoticeDetailCard({
     try {
       const response = await fetch(`${API_DOMAIN}/update-notice/${notice.id}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: notice.title,
           description: notice.description,
@@ -162,7 +160,7 @@ export default function NoticeDetailCard({
 
         {/* Description */}
         <div className="mb-4 flex-1">
-        <label className="block mb-2 font-bold text-xl">Description</label>
+          <label className="block mb-2 font-bold text-xl">Description</label>
           {editMode ? (
             <ReactQuill
               key="edit"
@@ -185,10 +183,7 @@ export default function NoticeDetailCard({
               className="h-full"
             />
           ) : (
-            <div
-              className="ql-editor"
-              dangerouslySetInnerHTML={{ __html: notice.description }}
-            />
+            <div className="ql-editor" dangerouslySetInnerHTML={{ __html: notice.description }} />
           )}
         </div>
 
@@ -197,41 +192,48 @@ export default function NoticeDetailCard({
           <div className="flex flex-wrap gap-4 mb-2">
             {notice.attachments.map(att => (
               <div key={att.id} className="relative">
-                {att.type === "image" ? (
+                {att.type.startsWith("image") ? (
                   <img src={att.url} alt="Attachment" className="w-64 h-40 object-cover rounded" />
+                ) : att.type.startsWith("video") ? (
+                  <video src={att.url} controls preload="metadata" className="w-64 h-40 rounded shadow-md" />
                 ) : (
-                  <video
-                    src={att.url}
-                    controls
-                    preload="metadata"
-                    className="w-64 h-40 rounded shadow-md"
-                  />
+                  <div className="flex flex-col items-center justify-center w-64 h-40 border rounded shadow-md bg-gray-50 text-gray-700 p-4">
+                    <span className="text-3xl mb-2">📄</span>
+                    <p className="text-xs truncate">{att.url.split('/').pop()}</p>
+                    <a href={att.url} download className="text-blue-500 text-xs underline mt-2">
+                      Download
+                    </a>
+                  </div>
                 )}
-                <button
-                  onClick={() => handleAttachmentRemove(att.id)}
-                  className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded"
-                >
-                  X
-                </button>
+                {editMode && (
+                  <button
+                    onClick={() => handleAttachmentRemove(att.id)}
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full"
+                  >
+                    X
+                  </button>
+                )}
               </div>
             ))}
           </div>
 
           {/* Upload Button */}
-          <div className="flex items-center gap-2 mt-4">
-            <button
-              onClick={() => document.getElementById(`fileInput-${notice.id}`)?.click()}
-              className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded m-2"
-            >
-              <Paperclip className="h-5 w-5" />
-            </button>
-            <input
-              id={`fileInput-${notice.id}`}
-              type="file"
-              onChange={handleAttachmentUpload}
-              className="hidden"
-            />
-          </div>
+          {editMode && (
+            <div className="flex items-center gap-2 mt-4">
+              <button
+                onClick={() => document.getElementById(`fileInput-${notice.id}`)?.click()}
+                className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded mr-2 mt-20"
+              >
+                <Paperclip className="h-5 w-5" />
+              </button>
+              <input
+                id={`fileInput-${notice.id}`}
+                type="file"
+                onChange={handleAttachmentUpload}
+                className="hidden"
+              />
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
